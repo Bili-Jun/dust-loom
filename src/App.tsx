@@ -1,4 +1,5 @@
 import { createSignal, onMount } from 'solid-js'
+import { init, addItem, fabricData } from './fabric'
 import './App.css'
 
 function positionInCanvas(e: { clientX: number; clientY: number; }, canvasLeft: number, canvasTop: number) {
@@ -134,13 +135,12 @@ function App() {
   let canvasRef: HTMLCanvasElement | ((el: HTMLCanvasElement) => void) | undefined
   
   onMount(() => {
-    resizeCanvas(canvasRef as HTMLCanvasElement)
-    window.addEventListener("resize", () => resizeCanvas(canvasRef as HTMLCanvasElement));
-    window.addEventListener("load", () => resizeCanvas(canvasRef as HTMLCanvasElement), { once: true });
-
+    init({}, canvasRef as HTMLCanvasElement)
   })
   return (
     <>
+      <button onClick={() => addItem({})}>这是按钮</button>
+      {JSON.stringify(fabricData(), null, 2)}
       <canvas ref={canvasRef} />
     </>
   )
