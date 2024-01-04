@@ -1,4 +1,5 @@
-import { defaultItemHeight, defaultItemWidth } from './constant'
+import { defaultItemHeight, defaultItemWidth, itemGap } from './constant'
+import { getRootItemData } from './store'
 
 export const enum ItemType {
   COMPONENT = 'component'
@@ -8,8 +9,9 @@ export interface IItemProps {
   y: number
   width?: number
   height?: number
-  type: ItemType,
+  type: ItemType
   text?: string
+  parentId: number
 }
 
 export default class Item {
@@ -50,6 +52,25 @@ export default class Item {
     ctx.fillText(props?.text || 'Unknow', tx, ty)
   }
 
+  renderLevelLine() {
+    const { ctx, props, x, y, style } = this
+
+    if (props.parentId === -1) {
+      return
+    }
+
+    const rootItemData = getRootItemData()
+    const isFirstChildren = y === (rootItemData?.y as number) + defaultItemHeight + itemGap
+
+    const targetX = x - 9
+    ctx.strokeStyle = '#666'
+    ctx.beginPath();
+    ctx.moveTo(targetX, isFirstChildren ? y : y - defaultItemHeight / 2 - itemGap);
+    ctx.lineTo(targetX, y + defaultItemHeight / 2);
+    ctx.lineTo(targetX + 5, y + defaultItemHeight / 2);
+    ctx.stroke();
+  }
+
   render() {
     const { ctx, props, style, x, y } = this
     const { width = defaultItemWidth, height = defaultItemHeight } = props
@@ -57,7 +78,7 @@ export default class Item {
 
     const targetWidth = x + width
     const targetHeight = y + height
-  
+
     ctx.save();
     ctx.fillStyle = style.fillStyle;
     ctx.strokeStyle = style.strokeStyle
@@ -72,6 +93,7 @@ export default class Item {
     ctx.stroke();
 
     this.renderText()
+    this.renderLevelLine()
     this.ctx.restore();
   }
 }
