@@ -1,5 +1,5 @@
 import { defaultItemHeight, defaultItemWidth, itemGap } from './constant'
-import { getRootItemData } from './store'
+import { getRootItemData, fabricContext } from './store'
 
 export const enum ItemType {
   COMPONENT = 'component'
@@ -11,14 +11,18 @@ export interface IItemProps {
   height?: number
   type: ItemType
   text?: string
+  level: number
   parentId: number
 }
 
+export interface IRenderOptions {
+  x: number
+  y: number
+}
+
 export default class Item {
-  ctx: CanvasRenderingContext2D
   props: IItemProps
-  constructor(ctx: CanvasRenderingContext2D, props: IItemProps) {
-    this.ctx = ctx
+  constructor(props: IItemProps) {
     this.props = props
   }
 
@@ -43,7 +47,8 @@ export default class Item {
   }
 
   renderText() {
-    const { ctx, props, x, y, style } = this
+    const { props, x, y, style } = this
+    const ctx = fabricContext() as CanvasRenderingContext2D
     ctx.fillStyle = style.fontColor;
     ctx.font = '14px Menlo,Andale Mono,Ubuntu Mono,monospace'
     ctx.textBaseline = 'middle'
@@ -53,7 +58,8 @@ export default class Item {
   }
 
   renderLevelLine() {
-    const { ctx, props, x, y, style } = this
+    const ctx = fabricContext() as CanvasRenderingContext2D
+    const { props, x, y, style } = this
 
     if (props.parentId === -1) {
       return
@@ -68,11 +74,24 @@ export default class Item {
     ctx.moveTo(targetX, isFirstChildren ? y : y - defaultItemHeight / 2 - itemGap);
     ctx.lineTo(targetX, y + defaultItemHeight / 2);
     ctx.lineTo(targetX + 5, y + defaultItemHeight / 2);
-    ctx.stroke();
+
   }
 
-  render() {
-    const { ctx, props, style, x, y } = this
+  clear() {
+    const ctx = fabricContext() as CanvasRenderingContext2D
+    const { props, x, y } = this
+    const { width = defaultItemWidth, height = defaultItemHeight } = props
+
+    const targetWidth = x + width
+    const targetHeight = y + height
+    ctx.clearRect(x, y, targetWidth, targetHeight)
+  }
+
+  render(options?: IRenderOptions) {
+    const ctx = fabricContext() as CanvasRenderingContext2D
+    const { props, x, y, style } = this
+    this.props.x = options?.x || this.props.x
+    this.props.y = options?.y || this.props.y
     const { width = defaultItemWidth, height = defaultItemHeight } = props
     const dpr = window.devicePixelRatio;
 
@@ -90,10 +109,11 @@ export default class Item {
     ctx.lineTo(x, targetHeight);
     ctx.fill()
     ctx.closePath();
-    ctx.stroke();
+    
 
     this.renderText()
     this.renderLevelLine()
-    this.ctx.restore();
+    ctx.stroke();
+    ctx.restore();
   }
 }
