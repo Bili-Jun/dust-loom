@@ -87,7 +87,7 @@ export default class Item {
     ctx.clearRect(x, y, targetWidth, targetHeight)
   }
 
-  render(options?: IRenderOptions) {
+  createItemBase(options?: IRenderOptions) {
     const ctx = fabricContext() as CanvasRenderingContext2D
     const { props, x, y, style } = this
     this.props.x = options?.x || this.props.x
@@ -109,10 +109,11 @@ export default class Item {
     ctx.lineTo(x, targetHeight);
     ctx.fill()
     ctx.closePath();
-    
+  } 
 
-    this.renderText()
-    this.renderLevelLine()
+  render(options?: IRenderOptions) {
+    const ctx = fabricContext() as CanvasRenderingContext2D
+    this.createItemBase(options)
     ctx.stroke();
     ctx.restore();
   }

@@ -1,7 +1,6 @@
 import { createSignal, onMount } from 'solid-js'
 import { init, addItem } from './fabric'
 import { fabricData } from './fabric/store'
-import './App.css'
 
 function positionInCanvas(e: { clientX: number; clientY: number; }, canvasLeft: number, canvasTop: number) {
   console.log('clientX：',e.clientX);

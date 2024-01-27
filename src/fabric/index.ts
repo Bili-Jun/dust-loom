@@ -1,10 +1,8 @@
-import { createSignal } from 'solid-js'
 import Item, { IItemProps, ItemType } from './Item'
 import { defaultItemWidth, defaultItemHeight, itemGap } from './constant'
 import { setFabricContext, setFabricData, setActiveFabricDataItem, activeFabricDataItem, fabricData, fabricContext, IAddItemOptions, IFabricDataItem } from './store'
 
 function getDragItem(event: MouseEvent) {
-  
   const offsetX = event.offsetX
   const offsetY = event.offsetY
   fabricData().forEach((item) => {
@@ -17,11 +15,21 @@ function getDragItem(event: MouseEvent) {
   })
 }
 
+export function clearFabricCanvas() {
+  const targetFabricContext = fabricContext()
+  targetFabricContext?.clearRect(0, 0, targetFabricContext.canvas.width, targetFabricContext.canvas.height)
+}
+
+export function clearFabric() {
+  clearFabricCanvas()
+  setFabricData([])
+}
+
 export function initBase(options: any, element: HTMLCanvasElement) {
   if (!element) {
     return
   }
-  setFabricData([])
+  clearFabric()
   const { width, height } = element?.getBoundingClientRect?.();
   const dpr = window.devicePixelRatio;
   
@@ -81,11 +89,14 @@ export function init(options: any, element: HTMLCanvasElement) {
   initBase(options, element)
   window.addEventListener("resize", () => initBase(options, element));
   element.addEventListener('mousemove', (event) => {
-    activeFabricDataItem()?.clear()
-    activeFabricDataItem()?.render({
-      x: event.x - defaultItemWidth  / 2,
-      y: event.y - defaultItemHeight
-    })
+    if (activeFabricDataItem()) {
+      clearFabricCanvas()
+      activeFabricDataItem()?.render({
+        x: event.x - defaultItemWidth  / 2,
+        y: event.y - defaultItemHeight
+      })
+    }
+    
   })
 
   element.addEventListener('mousedown', (event) => {
