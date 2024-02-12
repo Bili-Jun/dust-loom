@@ -1,18 +1,16 @@
-import { Graphics, ColorSource, TextStyle, Text, FederatedPointerEvent } from 'pixi.js'
+import { Graphics, ColorSource, TextStyle, Text, TextStyleFill } from 'pixi.js'
 import {
   FABRIC_ITEM_DEFAULT_BORDER_COLOR,
   FABRIC_ITEM_DEFAULT_FILL_COLOR,
   FABRIC_ITEM_DEFAULT_WIDTH,
-  FABRIC_ITEM_DEFAULT_HEIGHT
+  FABRIC_ITEM_DEFAULT_HEIGHT,
+  FABRIC_ITEM_DEFAULT_FONT_COLOR,
+  FABRIC_ITEM_TYPE,
+  FABRIC_ITEM_DEFAULT_TEXT_VALUE
 } from './constant'
+import { generateId } from './utils'
 
-import {
-  fabric
-} from './store'
-
-export type FabricItemId = [number, number]
-
-export interface ICreateItemOptions {
+export interface IFabricItemDrawStyleOptions {
   x: number
   y: number
   width?: number
@@ -21,73 +19,104 @@ export interface ICreateItemOptions {
   borderColor?: ColorSource
 }
 
-export interface IFabricItem extends ICreateItemOptions {
-  id: FabricItemId
-  parentId?: FabricItemId
-  destory: () => void
+export interface ICreateFabricItemOptions extends IFabricItemDrawStyleOptions {
+  parentId?: string
+  type?: FABRIC_ITEM_TYPE
+  textFontColor?: string
 }
 
-function onItemDragStart(_, context: Graphics) {
-  fabric?.()?.stage?.on?.('pointermove', (event: FederatedPointerEvent) => onItemDragMove(event, context));
+export class FabricItemText extends Text {
+  public id = Object.freeze(generateId())
+  public parentId?: string
+
+  constructor(...args: any) {
+    super(...args)
+  }
 }
 
-function onItemDragMove(event: FederatedPointerEvent, context: Graphics) {
-  console.log(event.global)
-  context.parent.toLocal(event.global, null, context.position);
-}
+/**
+ * 
+ */
+export class FabricItem extends Graphics {
+  private getItemText() {
+    return this.children.find(((subItem) => (subItem as FabricItemText).parentId === this.id)) as FabricItemText
+  }
+  public drawStyle(options: IFabricItemDrawStyleOptions) {
+    const { x, y, width, height, fill, borderColor } = options;
+    const targetFill = fill || FABRIC_ITEM_DEFAULT_FILL_COLOR
+    const targetBorderColor = borderColor || FABRIC_ITEM_DEFAULT_BORDER_COLOR
 
-// fabric?.()?.stage?.on?.('pointerup', onDragEnd);
-// fabric?.()?.stage?.on?.('pointerupoutside', onDragEnd);
+    let targetWidht = FABRIC_ITEM_DEFAULT_WIDTH;
+    let targetHeight = FABRIC_ITEM_DEFAULT_HEIGHT;
+    if (width as number >=0 ) {
+      targetWidht = width as number;
+    }
 
-export function createItem (options: ICreateItemOptions): IFabricItem {
-  const { x, y, width, height } = options;
-  const graphics = new Graphics();
+    if (height as number >= 0) {
+      targetHeight = height as number;
+    }
 
-  let targetWidht = FABRIC_ITEM_DEFAULT_WIDTH;
-  let targetHeight = FABRIC_ITEM_DEFAULT_HEIGHT;
-  if (width as number >=0 ) {
-    targetWidht = width as number;
+    this.clear()
+    this.lineStyle(2, targetBorderColor, 1);
+    this.beginFill(targetFill);
+
+    this.drawRect(x, y, targetWidht, targetHeight);
+    this.endFill();
+    const itemText = this.getItemText()
+    itemText?.position?.set?.(x + 8, y + 15)
   }
 
-  if (height as number >= 0) {
-    targetHeight = height as number;
+  public type: FABRIC_ITEM_TYPE = FABRIC_ITEM_TYPE.COMPONENNT
+  public id = Object.freeze(generateId())
+  public parentId?: string
+
+  get textFontColor() {
+    const itemText = this.getItemText()
+    return itemText.style.fill
   }
 
-  graphics.lineStyle(2, FABRIC_ITEM_DEFAULT_BORDER_COLOR, 1);
-  graphics.beginFill(FABRIC_ITEM_DEFAULT_FILL_COLOR);
-  graphics.drawRect(x, y, targetWidht, targetHeight);
-  graphics.endFill();
+  set textFontColor(val: TextStyleFill) {
+    const itemText = this.getItemText()
+    itemText.style.fill = val
+  }
 
-  graphics.eventMode = 'static';
-  graphics.cursor
-
-  const style = new TextStyle({
-      fontSize: 18,
-      fill: ['#ffffff'], // gradient
+  constructor(...graphicsArgs: any) {
+    super(...graphicsArgs)
+  
+    const style = new TextStyle({
+      fontSize: 16,
       wordWrap: true,
       wordWrapWidth: 440
-  });
+    });
 
-  const richText = new Text('unknow', style);
-  richText.x = x + 8
-  richText.y = y + 15
+    const itemText = new FabricItemText(FABRIC_ITEM_DEFAULT_TEXT_VALUE, style);
+    itemText.parentId = this.id
+    this.eventMode = 'static';
 
+    this.addChild(itemText)
+  }
+}
 
-  graphics.addChild(richText)
+/**
+ * 
+ * @param options 
+ * @returns 
+ */
+export function createFabricItem (options: ICreateFabricItemOptions): FabricItem {
+  const { x, y, width, height, textFontColor, fill, borderColor, type, parentId } = options;
+  const item = new FabricItem()
 
-  graphics.on('pointerdown', function(event) {
-    onItemDragStart(event, this)
-  }, graphics)
-  
-
-  fabric()?.stage.addChild(graphics);
-
-  return {
+  item.textFontColor = [textFontColor as string || FABRIC_ITEM_DEFAULT_FONT_COLOR]
+  item.type = type as FABRIC_ITEM_TYPE || FABRIC_ITEM_TYPE.COMPONENNT
+  item.parentId = parentId
+  item.drawStyle({
     x,
     y,
-    id: [x, y],
-    destory() {
-      fabric()?.stage.removeChild(graphics)
-    }
-  }
+    width,
+    height,
+    fill,
+    borderColor
+  })
+
+  return item
 }

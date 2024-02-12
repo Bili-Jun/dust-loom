@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.10.10",
+    "nanoid": "^5.0.5",
     "pixi.js": "^7.4.0",
     "solid-js": "^1.8.7"
   },

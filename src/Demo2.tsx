@@ -1,28 +1,24 @@
 import { onMount } from "solid-js"
-import { createFabric } from "./fabric-v2"
-import { createItem } from "./fabric-v2/item"
-import { getfabricData } from "./fabric-v2/store"
+import { Fabric } from "./fabric-v2"
 
 export default function App() {
   let appStageElement: HTMLDivElement | undefined
+  let fabric: Fabric
   
   onMount(() => {
     if (appStageElement) {
-      createFabric(appStageElement, {})
+      fabric = new Fabric(appStageElement)
+      debugger
     }
   })
 
   const addItem = (options?: any) => {
-    createItem({
-      x: 50,
-      y: 50
-    })
   }
 
   return (
     <>
       <button onClick={() => addItem({})}>添加节点</button>
-      {JSON.stringify(getfabricData())}
+      {/* {JSON.stringify(fabric.items)} */}
       <div ref={appStageElement}></div>
     </>
   )

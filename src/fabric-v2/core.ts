@@ -1,40 +1,62 @@
-import * as PIXI from 'pixi.js';
+import {
+  Application,
+  Container,
+  IApplicationOptions
+} from 'pixi.js';
 import {
   FABRIC_ITEM_DEFAULT_HEIGHT,
   FABRIC_ITEM_DEFAULT_WIDTH,
   FABRIC_STAGE_BACKGROUND
 } from './constant'
-import { addFabricDataItem, useFabric } from './store';
-import { createItem } from './item';
+import { FabricItem, createFabricItem } from './item';
 
+export type FabricCanvasOptions = Partial<IApplicationOptions>
 
-export interface ICreateFabricOptions {
-  stageBackground?: PIXI.ColorSource
+export class FabricCanvas extends Application {
+  private background: string = FABRIC_STAGE_BACKGROUND
+  private initRootItem() {
+    const { width, height } = this.view as HTMLCanvasElement
+    const x = Math.floor(width / 4 - FABRIC_ITEM_DEFAULT_WIDTH / 2);
+    const y = Math.floor(height / 4 - FABRIC_ITEM_DEFAULT_HEIGHT / 2);
+
+    const rootItem = createFabricItem({
+      x,
+      y
+    })
+    this.rootContainer.addChild(rootItem)
+  }
+
+  public rootContainer = new Container()
+
+  constructor(options: Partial<IApplicationOptions>) {
+    super(options)
+    this.background = this.background || FABRIC_STAGE_BACKGROUND
+    this.resizeTo = window
+    this.stage.eventMode = 'static'
+    this.rootContainer.eventMode = 'static'
+    this.initRootItem()
+    this.stage.addChild(this.rootContainer)
+  }
 }
 
-export function initRootNode(rootElement: HTMLElement | HTMLDivElement) {
-  const { width, height } = rootElement?.getBoundingClientRect?.();
-  const x = Math.floor(width / 2 - FABRIC_ITEM_DEFAULT_WIDTH / 2);
-  const y = Math.floor(height / 2 - FABRIC_ITEM_DEFAULT_HEIGHT / 2);
-  addFabricDataItem(createItem({
-    x,
-    y 
-  }))
-  
-}
+export class Fabric {
+  private getFabricItems = (): FabricItem[]  => []
 
-export function createFabric(element: HTMLElement, options: ICreateFabricOptions) {
-  const app = new PIXI.Application({
-    background: options.stageBackground || FABRIC_STAGE_BACKGROUND,
-    resizeTo: window,
-  });
+  get fabricData () {
+    const items = this.getFabricItems() as FabricItem[]
+    return items.map((item) => ({
+      id: item.id,
+      parentId: item.parentId
+    }))
+  }
 
-  element.appendChild(app.view as unknown as Node)
+  constructor(element: HTMLElement, options?: FabricCanvasOptions) {
+    const fabricCanvas = new FabricCanvas({
+      resolution: window.devicePixelRatio,
+      ...options
+    })
 
-  app.stage.eventMode = 'static';
-  app.stage.hitArea = app.screen;
-
-  useFabric(app)
-
-  initRootNode(element)
+    element.appendChild(fabricCanvas.view as unknown as Node)
+    this.getFabricItems = () => fabricCanvas.rootContainer.children as FabricItem[]
+  }
 }
