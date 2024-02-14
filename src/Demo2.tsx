@@ -8,7 +8,10 @@ export default function App() {
   onMount(() => {
     if (appStageElement) {
       fabric = new Fabric(appStageElement)
-      debugger
+      fabric.addItem({
+        name: '测试'
+      })
+
     }
   })
 

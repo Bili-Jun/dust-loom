@@ -23,6 +23,7 @@ export interface ICreateFabricItemOptions extends IFabricItemDrawStyleOptions {
   parentId?: string
   type?: FABRIC_ITEM_TYPE
   textFontColor?: string
+  name?: string
 }
 
 export class FabricItemText extends Text {
@@ -80,6 +81,16 @@ export class FabricItem extends Graphics {
     itemText.style.fill = val
   }
 
+  get itemName() {
+    const itemText = this.getItemText()
+    return itemText.text
+  }
+
+  set itemName(val: string) {
+    const itemText = this.getItemText()
+    itemText.text = val
+  }
+
   constructor(...graphicsArgs: any) {
     super(...graphicsArgs)
   
@@ -103,12 +114,24 @@ export class FabricItem extends Graphics {
  * @returns 
  */
 export function createFabricItem (options: ICreateFabricItemOptions): FabricItem {
-  const { x, y, width, height, textFontColor, fill, borderColor, type, parentId } = options;
+  const {
+    x,
+    y,
+    width,
+    height,
+    textFontColor,
+    fill,
+    borderColor,
+    type,
+    parentId,
+    name
+  } = options;
   const item = new FabricItem()
 
   item.textFontColor = [textFontColor as string || FABRIC_ITEM_DEFAULT_FONT_COLOR]
   item.type = type as FABRIC_ITEM_TYPE || FABRIC_ITEM_TYPE.COMPONENNT
   item.parentId = parentId
+  item.itemName = name as string || FABRIC_ITEM_DEFAULT_TEXT_VALUE
   item.drawStyle({
     x,
     y,

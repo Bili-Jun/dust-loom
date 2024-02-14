@@ -10,6 +10,8 @@ export const FABRIC_ITEM_DEFAULT_FONT_COLOR = '#fff'
 
 export const FABRIC_ITEM_DEFAULT_TEXT_VALUE = 'Unknow'
 
+export const FABRIC_ITEM_ROOT_TEXT_VALUE = 'Page'
+
 export const enum FABRIC_ITEM_TYPE {
   COMPONENNT = 'component'
 }
