@@ -44,7 +44,7 @@ export class FabricCanvas extends Application {
   get nextItemComponentPointer() {
     const itemComponennts = this.rootContainer.children.filter((item) => (item as FabricItem).type === FABRIC_ITEM_TYPE.COMPONENNT)
     const { x, y } = this.rootNodeItem?.getLocalBounds()
-    const point = new Point(x + 16, y + itemComponennts.length * (FABRIC_ITEM_DEFAULT_HEIGHT + 12))
+    const point = new Point(x + 24, y + itemComponennts.length * (FABRIC_ITEM_DEFAULT_HEIGHT + 12))
 
     return point
   }
@@ -137,12 +137,14 @@ export class Fabric {
 
     this.addItem = (options: Partial<ICreateFabricItemOptions>) => {
       const { x, y } = fabricCanvas.nextItemComponentPointer
+      const parentId = options.parentId || fabricCanvas.rootNodeItem.id
       const item = createFabricItem({
-        x: options.x || x,
-        y: options.y || y,
-        parentId: options.parentId || fabricCanvas.rootNodeItem.id,
+        x: options.x !== undefined ? options.x : x,
+        y: options.y !== undefined ? options.y : y,
+        parentId,
         ...options
       })
+
       fabricCanvas.rootContainer.addChild(item)
     }
   }

@@ -12,6 +12,8 @@ export const FABRIC_ITEM_DEFAULT_TEXT_VALUE = 'Unknow'
 
 export const FABRIC_ITEM_ROOT_TEXT_VALUE = 'Page'
 
+export const FABRIC_ITEM_TREE_LINE_COLOR = '#fff'
+
 export const enum FABRIC_ITEM_TYPE {
   COMPONENNT = 'component'
 }

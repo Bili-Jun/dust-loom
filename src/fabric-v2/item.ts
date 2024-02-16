@@ -6,7 +6,8 @@ import {
   FABRIC_ITEM_DEFAULT_HEIGHT,
   FABRIC_ITEM_DEFAULT_FONT_COLOR,
   FABRIC_ITEM_TYPE,
-  FABRIC_ITEM_DEFAULT_TEXT_VALUE
+  FABRIC_ITEM_DEFAULT_TEXT_VALUE,
+  FABRIC_ITEM_TREE_LINE_COLOR
 } from './constant'
 import { generateId } from './utils'
 
@@ -26,9 +27,33 @@ export interface ICreateFabricItemOptions extends IFabricItemDrawStyleOptions {
   name?: string
 }
 
+export interface IFabricItemTreeLineOptions {
+  x: number
+  y: number
+  visible: boolean
+}
+
 export class FabricItemText extends Text {
   public id = Object.freeze(generateId())
   public parentId?: string
+
+  constructor(...args: any) {
+    super(...args)
+  }
+}
+
+export class FabricItemTreeLine extends Graphics {
+  public id = Object.freeze(generateId())
+  public parentId?: string
+  public draw(options: IFabricItemTreeLineOptions) {
+    const { x, y, visible } = options
+    this.clear()
+    this.lineStyle(1, FABRIC_ITEM_TREE_LINE_COLOR, visible ? 1 : 0);
+    this.moveTo(x - 10, y - 4);
+    this.lineTo(x - 10, y + 24);
+    this.lineTo(x - 4, y + 24);
+
+  }
 
   constructor(...args: any) {
     super(...args)
@@ -40,8 +65,13 @@ export class FabricItemText extends Text {
  */
 export class FabricItem extends Graphics {
   private getItemText() {
-    return this.children.find(((subItem) => (subItem as FabricItemText).parentId === this.id)) as FabricItemText
+    return this.children.find(((subItem) => (subItem as FabricItemText) instanceof FabricItemText)) as FabricItemText
   }
+
+  private getItemTreeLine() {
+    return this.children.find(((subItem) => (subItem as FabricItemTreeLine) instanceof FabricItemTreeLine)) as FabricItemTreeLine
+  }
+
   public drawStyle(options: IFabricItemDrawStyleOptions) {
     const { x, y, width, height, fill, borderColor } = options;
     const targetFill = fill || FABRIC_ITEM_DEFAULT_FILL_COLOR
@@ -65,6 +95,13 @@ export class FabricItem extends Graphics {
     this.endFill();
     const itemText = this.getItemText()
     itemText?.position?.set?.(x + 8, y + 15)
+
+    const itemTreeLine = this.getItemTreeLine()
+    itemTreeLine.draw({
+      x,
+      y,
+      visible: this.parentId !== undefined
+    })
   }
 
   public type: FABRIC_ITEM_TYPE = FABRIC_ITEM_TYPE.COMPONENNT
@@ -102,8 +139,14 @@ export class FabricItem extends Graphics {
 
     const itemText = new FabricItemText(FABRIC_ITEM_DEFAULT_TEXT_VALUE, style);
     itemText.parentId = this.id
+
+    const treeLine = new FabricItemTreeLine()
+    treeLine.parentId = this.id
+
     this.eventMode = 'static';
 
+    this.cursor = 'grab'
+    this.addChild(treeLine)
     this.addChild(itemText)
   }
 }
