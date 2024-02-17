@@ -3,6 +3,8 @@ import {
   Container,
   FederatedPointerEvent,
   IApplicationOptions,
+  IPoint,
+  IPointData,
   Point
 } from 'pixi.js';
 import {
@@ -138,10 +140,14 @@ export class Fabric {
     this.addItem = (options: Partial<ICreateFabricItemOptions>) => {
       const { x, y } = fabricCanvas.nextItemComponentPointer
       const parentId = options.parentId || fabricCanvas.rootNodeItem.id
+      const parentBounds = fabricCanvas.rootNodeItem.getLocalBounds()
+      const parentPoint = options.parentPoint || new Point(parentBounds.x, parentBounds.y)
+      
       const item = createFabricItem({
         x: options.x !== undefined ? options.x : x,
         y: options.y !== undefined ? options.y : y,
         parentId,
+        parentPoint,
         ...options
       })
 

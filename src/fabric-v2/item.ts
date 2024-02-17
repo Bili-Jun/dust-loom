@@ -1,4 +1,4 @@
-import { Graphics, ColorSource, TextStyle, Text, TextStyleFill } from 'pixi.js'
+import { Graphics, ColorSource, TextStyle, Text, TextStyleFill, Point } from 'pixi.js'
 import {
   FABRIC_ITEM_DEFAULT_BORDER_COLOR,
   FABRIC_ITEM_DEFAULT_FILL_COLOR,
@@ -22,6 +22,7 @@ export interface IFabricItemDrawStyleOptions {
 
 export interface ICreateFabricItemOptions extends IFabricItemDrawStyleOptions {
   parentId?: string
+  parentPoint?: Point
   type?: FABRIC_ITEM_TYPE
   textFontColor?: string
   name?: string
@@ -31,6 +32,7 @@ export interface IFabricItemTreeLineOptions {
   x: number
   y: number
   visible: boolean
+  first: boolean
 }
 
 export class FabricItemText extends Text {
@@ -46,10 +48,10 @@ export class FabricItemTreeLine extends Graphics {
   public id = Object.freeze(generateId())
   public parentId?: string
   public draw(options: IFabricItemTreeLineOptions) {
-    const { x, y, visible } = options
+    const { x, y, visible, first } = options
     this.clear()
     this.lineStyle(1, FABRIC_ITEM_TREE_LINE_COLOR, visible ? 1 : 0);
-    this.moveTo(x - 10, y - 4);
+    this.moveTo(x - 10, first ? y - 4 : y - 36);
     this.lineTo(x - 10, y + 24);
     this.lineTo(x - 4, y + 24);
 
@@ -97,16 +99,20 @@ export class FabricItem extends Graphics {
     itemText?.position?.set?.(x + 8, y + 15)
 
     const itemTreeLine = this.getItemTreeLine()
+    const parentPoint = this.parentPoint as Point
+    console.log(y - parentPoint?.y - 12<= FABRIC_ITEM_DEFAULT_HEIGHT, y - parentPoint?.y, parentPoint?.y, y)
     itemTreeLine.draw({
       x,
       y,
-      visible: this.parentId !== undefined
+      visible: this.parentId !== undefined,
+      first: y - parentPoint?.y -12 <= FABRIC_ITEM_DEFAULT_HEIGHT
     })
   }
 
   public type: FABRIC_ITEM_TYPE = FABRIC_ITEM_TYPE.COMPONENNT
   public id = Object.freeze(generateId())
   public parentId?: string
+  public parentPoint?: Point
 
   get textFontColor() {
     const itemText = this.getItemText()
@@ -167,6 +173,7 @@ export function createFabricItem (options: ICreateFabricItemOptions): FabricItem
     borderColor,
     type,
     parentId,
+    parentPoint,
     name
   } = options;
   const item = new FabricItem()
@@ -175,6 +182,7 @@ export function createFabricItem (options: ICreateFabricItemOptions): FabricItem
   item.type = type as FABRIC_ITEM_TYPE || FABRIC_ITEM_TYPE.COMPONENNT
   item.parentId = parentId
   item.itemName = name as string || FABRIC_ITEM_DEFAULT_TEXT_VALUE
+  item.parentPoint = parentPoint
   item.drawStyle({
     x,
     y,
