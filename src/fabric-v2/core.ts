@@ -47,7 +47,6 @@ export class FabricCanvas extends Application {
     const itemComponennts = this.rootContainer.children.filter((item) => (item as FabricItem).type === FABRIC_ITEM_TYPE.COMPONENNT)
     const { x, y } = this.rootNodeItem?.getLocalBounds()
     const point = new Point(x + 24, y + itemComponennts.length * (FABRIC_ITEM_DEFAULT_HEIGHT + 12))
-
     return point
   }
 
@@ -93,8 +92,13 @@ export class FabricCanvas extends Application {
           const dy = curPoint.y - startPoint.y;
 
           const { x: originalX, y: originalY } = this.activeFabricItemOriginalPoint;
+
           this.activeFabricItem.position.set(originalX + dx, originalY + dy);
+          console.log(this.rootContainer.localTransform
+            .clone()
+            .apply(this.activeFabricItem.position))
           this.activeFabricItem.updateTransform();
+          console.log(this.activeFabricItem.position)
         }
       }
     )
@@ -137,21 +141,24 @@ export class Fabric {
     element.appendChild(fabricCanvas.view as unknown as Node)
     this.getFabricItems = () => fabricCanvas.rootContainer.children as FabricItem[]
 
-    this.addItem = (options: Partial<ICreateFabricItemOptions>) => {
+    this.addItem = (subOptions: Partial<ICreateFabricItemOptions>) => {
       const { x, y } = fabricCanvas.nextItemComponentPointer
-      const parentId = options.parentId || fabricCanvas.rootNodeItem.id
+      const parentId = subOptions.parentId || fabricCanvas.rootNodeItem.id
       const parentBounds = fabricCanvas.rootNodeItem.getLocalBounds()
-      const parentPoint = options.parentPoint || new Point(parentBounds.x, parentBounds.y)
-      
+      const parentPoint = subOptions.parentPoint || new Point(parentBounds.x, parentBounds.y)
+      debugger
       const item = createFabricItem({
-        x: options.x !== undefined ? options.x : x,
-        y: options.y !== undefined ? options.y : y,
+        x: subOptions.x !== undefined ? subOptions.x : x,
+        y: subOptions.y !== undefined ? subOptions.y : y,
         parentId,
         parentPoint,
-        ...options
+        ...subOptions
       })
 
       fabricCanvas.rootContainer.addChild(item)
+      // item.position.set(200, 200)
+      item.updateTransform();
+      debugger
     }
   }
 }

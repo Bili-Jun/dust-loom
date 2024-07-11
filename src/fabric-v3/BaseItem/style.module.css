@@ -1,0 +1,8 @@
+.fabric-item {
+  position: relative;
+  padding: 0 8px;
+  min-height: 100%;
+  background-color: #084272;
+  display: flex;
+  align-items: center;
+}
