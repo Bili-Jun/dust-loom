@@ -3,6 +3,11 @@
   height: 100vh;
 }
 
+.loom-fabric {
+  width: inherit;
+  height: inherit;
+}
+
 .fabric-item-view {
   width: inherit;
   height: inherit;

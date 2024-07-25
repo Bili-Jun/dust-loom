@@ -1,5 +1,5 @@
 import { render } from 'solid-js/web'
-import { Graph, Shape } from '@antv/x6'
+import { Graph, Shape, Node, Point } from '@antv/x6'
 import {
   DEFAULT_LOOM_FABRIC_CONTAINER_CLASSNAME,
   LOOM_FABRIC_CLASSNAME,
@@ -22,9 +22,11 @@ export interface IFabricOptions {
 }
 
 export interface IAddFabricItemOptions {
+  id: string
   type: FabricItemType
   x?: number
   y?: number
+  name: string
   width?: number
   height?: number
   zIndex?: number
@@ -48,11 +50,11 @@ Shape.HTML.register({
     html(cell) {
       const div = document.createElement('div')
       div.classList.add('fabric-item-view')
-      cell.data?.onMounted?.()
       render(
-        () => useBaseItemComponent({ a: 1 }),
+        () => useBaseItemComponent({ name: cell.data?.name, onMounted: cell.data?.onMounted }),
         div
       )
+      // cell.data?.onMounted()
 
       return div
     }
@@ -63,6 +65,7 @@ export class Fabric {
   private container: HTMLElement | null = null
   private rootElement: HTMLDivElement | null = null
   private graphInstance: Graph
+  private rootNode: Node | null = null
 
   public static registerNode() {
 
@@ -94,6 +97,10 @@ export class Fabric {
       autoResize: true,
     })
 
+    // this.graphInstance.on('view:mounted', () => {
+    //   this.graphInstance.centerContent()
+    // })
+
     // 获取画布的宽度和高度
     // const content = this.graphInstance.getContentBBox();
     // debugger
@@ -103,37 +110,72 @@ export class Fabric {
     // const centerX = width / 2;
     // const centerY = height / 2;
 
+    // this.graphInstance.fromJSON({
+    //   nodes: [{
+    //     id: 'root',
+    //     shape: 'rect', // FABRIC_ITEM_DEFAULT_SHAPE,
+    //     x: 40,
+    //     y: 40,
+    //     width: 150,
+    //     height: 48,
+    //     data: {
+    //       type: FabricItemType.Component
+    //     },
+    //   }]
+    // })
+    
 
-    const item = this.addItem({
-      type: FabricItemType.Component,
+
+    this.rootNode = this.addItem({
+      id: 'root',
+      type: FabricItemType.Component
     })
 
-    setTimeout(() => {
-      this.graphInstance.centerContent()
-    }, 100)
+    this.graphInstance.centerContent()
+
+    // setTimeout(() => {
+    // }, 100)
     // this.graphInstance.zoomToFit({ maxScale: 0.8 })
   }
 
   addItem(options: IAddFabricItemOptions) {
     const {
+      id,
       x,
       y,
       type,
       width,
       height,
       zIndex,
+      name,
       onMounted
     } = options
 
+    const rootNodePosition = this.rootNode?.position?.() as Point
+    const point = [x, y]
+    if (id !== 'root') {
+      point[0] = rootNodePosition?.x + 16
+      point[1] = rootNodePosition?.y + FABRIC_ITEM_DEFAULT_HEIGHT + 8
+      if(isNaN(point[0])) {
+        point[0] = 0
+      }
+
+      if(isNaN(point[1])) {
+        point[1] = 0
+      }
+    }
+
     const item = this.graphInstance.addNode({
-      type: type || 'component',
-      x,
-      y,
+      id,
+      x: point[0],
+      y: point[1],
       width,
       height,
       shape: FABRIC_ITEM_DEFAULT_SHAPE,
       zIndex,
       data: {
+        type: type || FabricItemType.Component,
+        name,
         onMounted
       },
     })
